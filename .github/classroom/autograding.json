@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Main",
+      "setup": "sudo -H pip3 install numpy pandas pytest",
+      "run": "pytest A2_test.py",
+      "input": "",
+      "output": "",
+      "comparison": "included",
+      "timeout": 10,
+      "points": null
+    }
+  ]
+}
