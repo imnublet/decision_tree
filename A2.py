@@ -12,18 +12,34 @@ def minority_class(labels):
 
 
 def gini(labels):
-    raise NotImplementedError('Your code here')
-    return impurity
+    label_freq = {}
+    temp = 0
+    for i in labels:
+        if i in label_freq:
+            label_freq[i] += 1
+        else:
+            label_freq[i] = 1
+    for label in label_freq.values():
+        temp += (label/len(labels))**2
+    return round(1-temp,3)
 
 
 def entropy(labels):
-    raise NotImplementedError('Your code here')
-    return impurity
+    label_freq = {}
+    temp = 0
+    for i in labels:
+        if i in label_freq:
+            label_freq[i] += 1
+        else:
+            label_freq[i] = 1
+    for label in label_freq.values():
+        temp += (label/len(labels))*np.log2(label/len(labels))
+    return -(temp)
 
 
 class DTree:
     def __init__(self, metric):
-        """Set up a new tree.
+        """Set up a new tree.ls
 
         We use the `metric` parameter to supply a impurity function such as Gini or Entropy.
         The other class variables should be set by the "fit" method.
@@ -39,7 +55,6 @@ class DTree:
 
     def _best_split(self, features, labels):
         """ Determine the best feature to split on.
-
         :param features: a pd.DataFrame with named training feature columns
         :param labels: a pd.Series or pd.DataFrame with training labels
         :return: `best_so_far` is a string with the name of the best feature,
@@ -50,7 +65,18 @@ class DTree:
 
         We select the feature with the lowest weighted impurity.
         """
-        raise NotImplementedError('Your code here')
+        best_so_far_impurity = 1
+        for feature in features:
+            yes_indices = features[feature].loc[features[feature] == True]
+            no_indices = features[feature].loc[features[feature] == False]
+            yes_labels = labels.isin(yes_indices).reindex_like(yes_indices)
+            no_labels = labels.isin(no_indices).reindex_like(no_indices)
+            yes_impurity = self._metric(yes_labels)
+            no_impurity = self._metric(no_labels)
+            weighted_impurity = yes_impurity * (len(yes_indices)/(len(yes_indices) + len(no_indices))) + no_impurity * (len(no_indices)/(len(yes_indices) + len(no_indices)))
+            if weighted_impurity < best_so_far_impurity:
+                best_so_far_impurity = weighted_impurity
+                best_so_far = feature
         return best_so_far, best_so_far_impurity
 
     def fit(self, features, labels):
@@ -71,11 +97,27 @@ class DTree:
         and fit the Yes subtree with the instances that split to the True side,
         and the No subtree with the instances that are False according to the splitting feature.
         """
-        raise NotImplementedError('Your code here')
+        self._label = labels.value_counts().idxmax()
+        self._samples = labels.size
+        self._distribution.append(labels.value_counts().values)
+        self._impurity = self._metric(labels)
+        print(self._impurity)
 
         split, split_impurity = self._best_split(features, labels)  # Find the best split, if any
 
-        raise NotImplementedError('... and the rest of your code here')
+        if split_impurity < self._impurity and split is not None:
+            self._split = split
+            self._yes = DTree(metric=self._metric)
+            self._no = DTree(metric=self._metric)
+            yes_features = features.loc[features[split] == 1]
+            yes_labels = labels.loc[features[split] == 1]
+            no_features = features.loc[features[split] == 0]
+            no_labels = labels.loc[features[split] == 0]
+            self._no.fit(no_features, no_labels)
+            self._yes.fit(yes_features, yes_labels)
+        else:
+            self._split = False
+        print(self.to_text())
 
     def predict(self, features):
         """ Predict the labels of the instances based on the features
