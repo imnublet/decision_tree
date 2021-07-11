@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-from A2 import minority_class, gini, entropy, DTree
+from tree import minority_class, gini, entropy, DTree
 
 
 def test_minority_class():
